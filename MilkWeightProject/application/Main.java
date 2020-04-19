@@ -26,6 +26,15 @@ public class Main extends Application {
   private static final int WINDOW_WIDTH = 400;
   private static final int WINDOW_HEIGHT = 450;
   private static final String APP_TITLE = "Milk Weights";
+  private Scene welcomeScene;
+  private Scene farmReportScene;
+  private Label farm;
+  private TextField farmTF;
+  private Label header;
+  private TableColumn<String, DataEntry> column1;
+  private Label year;
+  private TextField yearTF;
+  private VBox entriesVB;
   private boolean isFarmReport;
   private boolean isAnnualReport;
   private boolean isMonthlyReport;
@@ -82,7 +91,7 @@ public class Main extends Application {
     welcome.setCenter(optionsVBox);
 
     // Create scene
-    Scene welcomeScene = new Scene(welcome, WINDOW_WIDTH, WINDOW_HEIGHT);
+    welcomeScene = new Scene(welcome, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
 
@@ -90,7 +99,7 @@ public class Main extends Application {
 
     VBox headerBox = new VBox();
 
-    Label header = new Label("Farm Report");
+    header = new Label("Farm Report");
     Label milkTotalLabel = new Label("Total Milk Weight:");
     header.setFont(Font.font("Times New Roman", 18));
     milkTotalLabel.setFont(Font.font("Times New Roman", 16));
@@ -99,15 +108,15 @@ public class Main extends Application {
     headerBox.getChildren().add(milkTotalLabel);
 
     // created right panel side asking for user input
-    VBox entriesVB = new VBox();
-    Label farm = new Label("Farm ID:");
+    entriesVB = new VBox();
+    farm = new Label("Farm ID:");
     farm.setFont(Font.font("Times New Roman", 18));
-    TextField farmTF = new TextField();
+    farmTF = new TextField();
     farmTF.setPromptText("Enter Farm ID");
     farmTF.setAlignment(Pos.CENTER);
-    Label year = new Label("Year:");
+    year = new Label("Year:");
     year.setFont(Font.font("Times New Roman", 18));
-    TextField yearTF = new TextField();
+    yearTF = new TextField();
     yearTF.setPromptText("Enter A Year");
     yearTF.setAlignment(Pos.CENTER);
     Button display = new Button("Display");
@@ -119,7 +128,7 @@ public class Main extends Application {
     entriesVB.getChildren().addAll(farm, farmTF, year, yearTF, display, filePath, writeToFile);
     // creates farm report data table
     TableView tableView = new TableView();
-    TableColumn<String, DataEntry> column1 = new TableColumn<>("Month");
+    column1 = new TableColumn<>("Month");
     // column1.setCellValueFactory(new PropertyValueFactory("month"));
     TableColumn<String, DataEntry> column2 = new TableColumn<>("Percentage of Total");
     // column2.setCellValueFactory(new PropertyValueFactory("percent"));
@@ -133,6 +142,16 @@ public class Main extends Application {
 
     // Bottom Panel
     Button button = new Button("Back");
+    button.setOnAction(new EventHandler<ActionEvent>() {
+
+      @Override
+      public void handle(ActionEvent arg0) {
+        // TODO Auto-generated method stub
+        primaryStage.setTitle(APP_TITLE);
+        primaryStage.setScene(welcomeScene);
+        primaryStage.show();
+      }
+    });
 
     // modifications for each type of report
     if (isAnnualReport) {
@@ -167,7 +186,7 @@ public class Main extends Application {
     reportReport.setBottom(button);
     reportReport.setRight(entriesVB);
     // report.setCenter();
-    Scene farmReportScene = new Scene(reportReport, WINDOW_WIDTH, WINDOW_HEIGHT);
+    farmReportScene = new Scene(reportReport, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // Add the stuff and set the primary stage
     primaryStage.setTitle(APP_TITLE);
@@ -179,9 +198,7 @@ public class Main extends Application {
       @Override
       public void handle(ActionEvent event) {
         // TODO Auto-generated method stub
-        primaryStage.setTitle(APP_TITLE);
-        primaryStage.setScene(farmReportScene);
-        primaryStage.show();
+        setReportScene(primaryStage, 'F');
       }
 
     });
@@ -190,9 +207,7 @@ public class Main extends Application {
       @Override
       public void handle(ActionEvent event) {
         // TODO Auto-generated method stub
-        primaryStage.setTitle(APP_TITLE);
-        primaryStage.setScene(farmReportScene);
-        primaryStage.show();
+        setReportScene(primaryStage, 'A');
       }
 
     });
@@ -201,9 +216,7 @@ public class Main extends Application {
       @Override
       public void handle(ActionEvent event) {
         // TODO Auto-generated method stub
-        primaryStage.setTitle(APP_TITLE);
-        primaryStage.setScene(farmReportScene);
-        primaryStage.show();
+        setReportScene(primaryStage, 'M');
       }
 
     });
@@ -212,9 +225,7 @@ public class Main extends Application {
       @Override
       public void handle(ActionEvent event) {
         // TODO Auto-generated method stub
-        primaryStage.setTitle(APP_TITLE);
-        primaryStage.setScene(farmReportScene);
-        primaryStage.show();
+        setReportScene(primaryStage, 'D');
       }
 
     });
@@ -225,5 +236,45 @@ public class Main extends Application {
    */
   public static void main(String[] args) {
     launch(args);
+  }
+
+  private void setReportScene(Stage primaryStage, char report) {
+    if (report == 'F') {
+      primaryStage.setTitle(APP_TITLE);
+      primaryStage.setScene(farmReportScene);
+      primaryStage.show();
+    } else if (report == 'M') {
+      farm.setText("Month: ");
+      farmTF.setPromptText("Enter A Month");
+      header.setText("Monthly Report");
+      column1.setText("Farm ID");
+      primaryStage.setTitle(APP_TITLE);
+      primaryStage.setScene(farmReportScene);
+      primaryStage.show();
+    } else if (report == 'A') {
+      farm.setVisible(false);
+      farmTF.setVisible(false);
+      header.setText("Annual Report");
+      column1.setText("Farm ID");
+      primaryStage.setTitle(APP_TITLE);
+      primaryStage.setScene(farmReportScene);
+      primaryStage.show();
+    } else if (report == 'D') {
+      header.setText("Date Range Report");
+      column1.setText("Farm ID");
+      DatePicker beginningDate = new DatePicker();
+      DatePicker endDate = new DatePicker();
+      farm.setText("Beginning Date:");
+      farmTF.setVisible(false);
+      year.setText("End Date:");
+      yearTF.setVisible(false);
+      entriesVB.getChildren().add(1, beginningDate);
+      entriesVB.getChildren().add(4, endDate);
+      primaryStage.setTitle(APP_TITLE);
+      primaryStage.setScene(farmReportScene);
+      primaryStage.show();
+    }
+
+
   }
 }
