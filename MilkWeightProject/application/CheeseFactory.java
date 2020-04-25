@@ -1,5 +1,8 @@
 package application;
 
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+
 public class CheeseFactory {
 	public String name;
 	public Farm[] milkDataFromFarms;
@@ -58,7 +61,24 @@ public class CheeseFactory {
 		return true;
 	}
 
-	public boolean insertData() {
+	/**
+	 * inserts data into program from a file
+	 * @param filePath
+	 * @return true if works and false otherwise
+	 */
+	public boolean insertData(String filePath){
+		FileReader fr;
+		try {
+			fr = new FileReader(filePath);
+		} catch (FileNotFoundException e) {
+			return false;
+		}
+		ArrayList<String> farmData = fr.getFarmData();
+		ArrayList<MilkEntry> milkData = fr.getMilkData();
+		for(int i = 0; i < farmData.size(); i++) {
+			this.insertSingleData(milkData.get(i).date.YEAR, milkData.get(i).date.MONTH, milkData.get(i).date.DAY_OF_MONTH, farmData.get(i), milkData.get(i).weight);
+		}
+		
 		return true;
 	}
 

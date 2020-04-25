@@ -105,5 +105,9 @@ public class Farm {
 		milkData = new MilkEntry[10];
 		return temp;
 	}
+	
+	public String toString() {
+		return "Farm ID: " + farmID + " Number of entries: " + numEntries;
+	}
 
 }

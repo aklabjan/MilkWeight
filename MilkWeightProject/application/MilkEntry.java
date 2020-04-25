@@ -13,4 +13,8 @@ public class MilkEntry {
 		date.set(Calendar.YEAR, year);
 		this.weight = weight;
 	}
+	
+	public String toString() {
+		return "Weight: " + weight + " Date: " + date;
+	}
 }
