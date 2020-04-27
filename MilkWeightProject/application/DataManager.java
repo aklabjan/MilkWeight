@@ -36,6 +36,7 @@ public class DataManager {
 	public DataEntry[] getDataForFarmReport(String farmID) {
 		int[] monthlyTotal = new int[12];
 		total = 0;
+		min = 0;
 		data = new DataEntry[12];
 		Farm farm = new Farm("");
 		// gets the farm
