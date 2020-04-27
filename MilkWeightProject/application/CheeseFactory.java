@@ -49,7 +49,8 @@ public class CheeseFactory {
 	 * @return true when inserted
 	 */
 	public boolean insertSingleData(int year, int month, int day, String farmID, int weight) {
-		for (int i = 0; i < milkDataFromFarms.length; i++) {
+		for (int i = 0; i < numFarms; i++) {
+		System.out.println(milkDataFromFarms[i]);
 			if (farmID.equals(milkDataFromFarms[i].farmID)) {
 				milkDataFromFarms[i].insertMilkForDate(year, month, day, weight);
 				totalWeight += weight;
@@ -73,7 +74,7 @@ public class CheeseFactory {
 	 */
 	public boolean insertData(String filePath) throws FileNotFoundException{
 		FileReader fr;
-			fr = new FileReader(filePath);
+		fr = new FileReader(filePath);
 		ArrayList<String> farmData = fr.getFarmData();
 		ArrayList<MilkEntry> milkData = fr.getMilkData();
 		for(int i = 0; i < farmData.size(); i++) {

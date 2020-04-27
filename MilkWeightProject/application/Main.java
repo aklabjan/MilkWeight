@@ -1,8 +1,14 @@
 package application;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 
+import application.Main.DataEntry;
 import javafx.application.Application;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -13,6 +19,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.*;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -31,7 +38,7 @@ public class Main extends Application {
 	private Label oneLabel;
 	private TextField oneTF;
 	private Label header;
-	private TableColumn<String, DataEntry> column1;
+	private TableColumn<DataEntry, String> column1;
 	private DatePicker beginningDate;
 	private DatePicker endDate;
 	private Label twoLabel;
@@ -43,16 +50,7 @@ public class Main extends Application {
 	private Label minMaxAverage;
 	private Label milkTotalLabel;
 	private CheeseFactory cheeseFactory;
-
-	private class DataEntry {
-		private String month;
-		private double percent;
-
-		public DataEntry(String m, double p) {
-			month = m;
-			percent = p;
-		}
-	}
+	private DataManager dm;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -76,6 +74,7 @@ public class Main extends Application {
 				try {
 					cheeseFactory = new CheeseFactory("Name");
 					cheeseFactory.insertData(importFilePathTF.getText());
+					dm = new DataManager(cheeseFactory);
 					welcomeHeader.setText("Welcome to The Farm Report");
 				} catch (FileNotFoundException e) {
 					cheeseFactory = null;
@@ -153,11 +152,9 @@ public class Main extends Application {
 		endDate = new DatePicker();
 		entriesVB.setAlignment(Pos.CENTER);
 		// creates farm report data table
-		TableView tableView = new TableView();
+		TableView<DataEntry> tableView = new TableView<DataEntry>();
 		column1 = new TableColumn<>();
-		// column1.setCellValueFactory(new PropertyValueFactory("month"));
-		TableColumn<String, DataEntry> column2 = new TableColumn<>("Percent of Total");
-		// column2.setCellValueFactory(new PropertyValueFactory("percent"));
+		TableColumn<DataEntry, String> column2 = new TableColumn<>("Percent of Total");
 		tableView.getColumns().add(column1);
 		tableView.getColumns().add(column2);
 		tableView.setPlaceholder(new Label("No data to display."));
@@ -202,6 +199,7 @@ public class Main extends Application {
 					welcomeHeader.setText("Welcome to The Farm Report");
 					setReportScene(primaryStage, 'F');
 				}
+
 			}
 		});
 		annualReportButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -237,6 +235,26 @@ public class Main extends Application {
 				}
 			}
 		});
+
+		display.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				ObservableList<DataEntry> data = FXCollections.observableArrayList();
+				for (application.DataManager.DataEntry d : dm.getDataForFarmReport(oneTF.getText())) {
+					DataEntry temp = new DataEntry(d.column1Data, d.column2Data);
+					data.add(temp);
+				}
+				
+
+				column1.setCellValueFactory(
+						new PropertyValueFactory<DataEntry, String>("column1Data"));
+
+				column2.setCellValueFactory(
+						new PropertyValueFactory<DataEntry, String>("column2Data"));
+
+				tableView.setItems(data);
+			}
+		});
 	}
 
 	/**
@@ -250,7 +268,7 @@ public class Main extends Application {
 	 * sets up the report scene based on what report is wanted
 	 */
 	private void setReportScene(Stage primaryStage, char report) {
-		if (report == 'F') { //farm report
+		if (report == 'F') { // farm report
 			entriesVB.getChildren().clear();
 			entriesVB.getChildren().addAll(oneLabel, oneTF, display, filePath, writeToFile);
 			column1.setText("Month");
@@ -261,7 +279,7 @@ public class Main extends Application {
 			primaryStage.setTitle(APP_TITLE);
 			primaryStage.setScene(reportScene);
 			primaryStage.show();
-		} else if (report == 'M') { //monthly report
+		} else if (report == 'M') { // monthly report
 			entriesVB.getChildren().clear();
 			entriesVB.getChildren().addAll(oneLabel, oneTF, display, filePath, writeToFile);
 			oneLabel.setText("Month: ");
@@ -273,7 +291,7 @@ public class Main extends Application {
 			primaryStage.setTitle(APP_TITLE);
 			primaryStage.setScene(reportScene);
 			primaryStage.show();
-		} else if (report == 'A') { //annual report
+		} else if (report == 'A') { // annual report
 			entriesVB.getChildren().clear();
 			entriesVB.getChildren().addAll(display, filePath, writeToFile);
 			header.setText("Annual Report");
@@ -283,7 +301,7 @@ public class Main extends Application {
 			primaryStage.setTitle(APP_TITLE);
 			primaryStage.setScene(reportScene);
 			primaryStage.show();
-		} else if (report == 'D') { //date report
+		} else if (report == 'D') { // date report
 			entriesVB.getChildren().clear();
 			entriesVB.getChildren().addAll(oneLabel, beginningDate, twoLabel, endDate, display, filePath, writeToFile);
 			oneLabel.setText("Beginning Date:");
@@ -297,5 +315,23 @@ public class Main extends Application {
 			primaryStage.show();
 		}
 
+	}
+
+	public static class DataEntry {
+		private final String column1Data;
+		private final double column2Data;
+
+		public DataEntry(String d1, double d2) {
+			column1Data = d1;
+			column2Data = d2;
+		}
+
+		public String getColumn1Data() {
+			return column1Data;
+		}
+		
+		public double getColumn2Data() {
+			return column2Data;
+		}
 	}
 }

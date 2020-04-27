@@ -67,7 +67,10 @@ public class DataManager {
 		int[] monthlyTotal = new int[12];
 		total = 0;
 		DataEntry[] data = new DataEntry[12];
-		Farm farm = new Farm("");
+		for(int i = 0; i < data.length; i++) {
+			data[i] = new DataEntry();
+		}
+		Farm farm = null;
 		// gets the farm
 		for (int i = 0; i < cheeseFactory.numFarms; i++) {
 			if (cheeseFactory.milkDataFromFarms[i].farmID.equals(farmID)) {
@@ -85,7 +88,7 @@ public class DataManager {
 		max = 0;
 		for (int i = 0; i < monthlyTotal.length; i++) {
 			data[i].column1Data = Integer.toString(i + 1);
-			data[i].column2Data = monthlyTotal[i] / total;
+			data[i].column2Data = (double)monthlyTotal[i] / (double)total;
 			if (max < monthlyTotal[i]) {
 				max = monthlyTotal[i];
 			}
