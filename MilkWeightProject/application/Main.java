@@ -37,6 +37,8 @@ public class Main extends Application {
 	private Button display;
 	private Button writeToFile;
 	private TextField filePath;
+	private Label minMaxAverage;
+	private Label milkTotalLabel;
 
 	private class DataEntry {
 		private String month;
@@ -96,12 +98,12 @@ public class Main extends Application {
 		VBox headerBox = new VBox();
 
 		header = new Label("Farm Report");
-		Label milkTotalLabel = new Label("Total Milk Weight:");
+		milkTotalLabel = new Label("Total Milk Weight:");
+		minMaxAverage = new Label("Average Weight: Maximum Weight: Average Weight:");
 		header.setFont(Font.font("Times New Roman", 18));
 		milkTotalLabel.setFont(Font.font("Times New Roman", 16));
 		headerBox.setAlignment(Pos.CENTER);
-		headerBox.getChildren().add(header);
-		headerBox.getChildren().add(milkTotalLabel);
+		headerBox.getChildren().addAll(header, milkTotalLabel, minMaxAverage);
 
 		// created right panel side asking for user input
 		entriesVB = new VBox();
@@ -199,12 +201,12 @@ public class Main extends Application {
 	private void setReportScene(Stage primaryStage, char report) {
 		if (report == 'F') {
 			entriesVB.getChildren().clear();
-			entriesVB.getChildren().addAll(oneLabel, oneTF, twoLabel, twoTF, display, filePath, writeToFile);
+			entriesVB.getChildren().addAll(oneLabel, oneTF, display, filePath, writeToFile);
 			column1.setText("Month");
 			oneLabel.setText("Farm ID:");
 			oneTF.setPromptText("Enter Farm ID");
-			twoLabel.setText("Year:");
-			twoTF.setPromptText("Enter A Year");
+			minMaxAverage.setVisible(false);
+			milkTotalLabel.setVisible(false);
 			primaryStage.setTitle(APP_TITLE);
 			primaryStage.setScene(reportScene);
 			primaryStage.show();
@@ -215,6 +217,8 @@ public class Main extends Application {
 			oneTF.setPromptText("Enter A Month");
 			header.setText("Monthly Report");
 			column1.setText("Farm ID");
+			minMaxAverage.setVisible(false);
+			milkTotalLabel.setVisible(false);
 			primaryStage.setTitle(APP_TITLE);
 			primaryStage.setScene(reportScene);
 			primaryStage.show();
@@ -225,6 +229,8 @@ public class Main extends Application {
 			oneTF.setPromptText("Enter A Year");
 			header.setText("Annual Report");
 			column1.setText("Farm ID");
+			minMaxAverage.setVisible(false);
+			milkTotalLabel.setVisible(false);
 			primaryStage.setTitle(APP_TITLE);
 			primaryStage.setScene(reportScene);
 			primaryStage.show();
@@ -235,6 +241,8 @@ public class Main extends Application {
 			twoLabel.setText("End Date:");
 			header.setText("Date Range Report");
 			column1.setText("Farm ID");
+			minMaxAverage.setVisible(false);
+			milkTotalLabel.setVisible(false);
 			primaryStage.setTitle(APP_TITLE);
 			primaryStage.setScene(reportScene);
 			primaryStage.show();
