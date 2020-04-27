@@ -7,6 +7,7 @@ public class CheeseFactory {
 	public String name;
 	public Farm[] milkDataFromFarms;
 	public int numFarms;
+	public int totalWeight;
 
 	/**
 	 * creates a new cheese factory
@@ -22,6 +23,7 @@ public class CheeseFactory {
 		this.name = name;
 		milkDataFromFarms = new Farm[10];
 		numFarms = 0;
+		totalWeight = 0;
 	}
 
 	/**
@@ -50,6 +52,7 @@ public class CheeseFactory {
 		for (int i = 0; i < milkDataFromFarms.length; i++) {
 			if (farmID.equals(milkDataFromFarms[i].farmID)) {
 				milkDataFromFarms[i].insertMilkForDate(year, month, day, weight);
+				totalWeight += weight;
 				return true;
 			}
 		}
@@ -58,6 +61,7 @@ public class CheeseFactory {
 		resize();
 		milkDataFromFarms[numFarms] = newFarm;
 		numFarms++;
+		totalWeight += weight;
 		return true;
 	}
 
@@ -65,14 +69,11 @@ public class CheeseFactory {
 	 * inserts data into program from a file
 	 * @param filePath
 	 * @return true if works and false otherwise
+	 * @throws FileNotFoundException 
 	 */
-	public boolean insertData(String filePath){
+	public boolean insertData(String filePath) throws FileNotFoundException{
 		FileReader fr;
-		try {
 			fr = new FileReader(filePath);
-		} catch (FileNotFoundException e) {
-			return false;
-		}
 		ArrayList<String> farmData = fr.getFarmData();
 		ArrayList<MilkEntry> milkData = fr.getMilkData();
 		for(int i = 0; i < farmData.size(); i++) {

@@ -9,7 +9,7 @@ public class Farm {
 	public String farmID;
 	public MilkEntry[] milkData;
 	public int numEntries;
-
+	public int totalWeight;
 	/**
 	 * creates a farm
 	 * 
@@ -47,6 +47,7 @@ public class Farm {
 		resize();
 		milkData[numEntries] = new MilkEntry(year, month, day, weight);
 		numEntries++;
+		totalWeight += weight;
 		return true;
 	}
 

@@ -1,5 +1,7 @@
 package application;
 
+import java.io.FileNotFoundException;
+
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -12,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -20,8 +23,8 @@ public class Main extends Application {
 	// store any command-line arguments that were entered.
 	// NOTE: this.getParameters().getRaw() will get these also
 
-	private static final int WINDOW_WIDTH = 400;
-	private static final int WINDOW_HEIGHT = 450;
+	private static final int WINDOW_WIDTH = 500;
+	private static final int WINDOW_HEIGHT = 500;
 	private static final String APP_TITLE = "Milk Weights";
 	private Scene welcomeScene;
 	private Scene reportScene;
@@ -39,6 +42,7 @@ public class Main extends Application {
 	private TextField filePath;
 	private Label minMaxAverage;
 	private Label milkTotalLabel;
+	private CheeseFactory cheeseFactory;
 
 	private class DataEntry {
 		private String month;
@@ -57,6 +61,30 @@ public class Main extends Application {
 		Label welcomeHeader = new Label("Welcome to The Farm Report");
 		welcomeHeader.setAlignment(Pos.CENTER);
 		welcomeHeader.setFont(Font.font("Questrial", 25));
+
+		// creates left side to import data
+		VBox importFileVBox = new VBox();
+		importFileVBox.setAlignment(Pos.CENTER);
+		Label importFileLabel = new Label("Filepath to folder containing data:");
+		TextField importFilePathTF = new TextField();
+		importFilePathTF.setPromptText("Entire filepath");
+		importFilePathTF.setAlignment(Pos.CENTER);
+		Button importFileButton = new Button("Import Data");
+		importFileButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+				try {
+					cheeseFactory = new CheeseFactory("Name");
+					cheeseFactory.insertData(importFilePathTF.getText());
+					welcomeHeader.setText("Welcome to The Farm Report");
+				} catch (FileNotFoundException e) {
+					cheeseFactory = null;
+					welcomeHeader.setText("Invalid file name. Please try again.");
+				}
+			}
+		});
+		importFileButton.setAlignment(Pos.CENTER);
+		importFileVBox.getChildren().addAll(importFileLabel, importFilePathTF, importFileButton);
 
 		// Set up options of reports
 		VBox optionsVBox = new VBox();
@@ -86,6 +114,7 @@ public class Main extends Application {
 
 		// Add to the panel
 		welcome.setTop(welcomeHeader);
+		welcome.setLeft(importFileVBox);
 		welcome.setMargin(welcomeHeader, new Insets(50, 0, 0, 0));
 		welcome.setAlignment(welcomeHeader, Pos.CENTER);
 		welcome.setCenter(optionsVBox);
@@ -142,7 +171,6 @@ public class Main extends Application {
 
 			@Override
 			public void handle(ActionEvent arg0) {
-				// TODO Auto-generated method stub
 				primaryStage.setTitle(APP_TITLE);
 				primaryStage.setScene(welcomeScene);
 				primaryStage.show();
@@ -168,25 +196,45 @@ public class Main extends Application {
 		farmReportButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				setReportScene(primaryStage, 'F');
+				if (cheeseFactory == null) {
+					welcomeHeader.setText("Please upload data before selecting a report.");
+				} else {
+					welcomeHeader.setText("Welcome to The Farm Report");
+					setReportScene(primaryStage, 'F');
+				}
 			}
 		});
 		annualReportButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				setReportScene(primaryStage, 'A');
+				if (cheeseFactory == null) {
+					welcomeHeader.setText("Please upload data before selecting a report.");
+				} else {
+					welcomeHeader.setText("Welcome to The Farm Report");
+					setReportScene(primaryStage, 'A');
+				}
 			}
 		});
 		monthlyReportButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				setReportScene(primaryStage, 'M');
+				if (cheeseFactory == null) {
+					welcomeHeader.setText("Please upload data before selecting a report.");
+				} else {
+					welcomeHeader.setText("Welcome to The Farm Report");
+					setReportScene(primaryStage, 'M');
+				}
 			}
 		});
 		dateRangeReportButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				setReportScene(primaryStage, 'D');
+				if (cheeseFactory == null) {
+					welcomeHeader.setText("Please upload data before selecting a report.");
+				} else {
+					welcomeHeader.setText("Welcome to The Farm Report");
+					setReportScene(primaryStage, 'D');
+				}
 			}
 		});
 	}
@@ -198,8 +246,11 @@ public class Main extends Application {
 		launch(args);
 	}
 
+	/*
+	 * sets up the report scene based on what report is wanted
+	 */
 	private void setReportScene(Stage primaryStage, char report) {
-		if (report == 'F') {
+		if (report == 'F') { //farm report
 			entriesVB.getChildren().clear();
 			entriesVB.getChildren().addAll(oneLabel, oneTF, display, filePath, writeToFile);
 			column1.setText("Month");
@@ -210,11 +261,11 @@ public class Main extends Application {
 			primaryStage.setTitle(APP_TITLE);
 			primaryStage.setScene(reportScene);
 			primaryStage.show();
-		} else if (report == 'M') {
+		} else if (report == 'M') { //monthly report
 			entriesVB.getChildren().clear();
 			entriesVB.getChildren().addAll(oneLabel, oneTF, display, filePath, writeToFile);
 			oneLabel.setText("Month: ");
-			oneTF.setPromptText("Enter A Month");
+			oneTF.setPromptText("Ex: For January enter 1");
 			header.setText("Monthly Report");
 			column1.setText("Farm ID");
 			minMaxAverage.setVisible(false);
@@ -222,11 +273,9 @@ public class Main extends Application {
 			primaryStage.setTitle(APP_TITLE);
 			primaryStage.setScene(reportScene);
 			primaryStage.show();
-		} else if (report == 'A') {
+		} else if (report == 'A') { //annual report
 			entriesVB.getChildren().clear();
-			entriesVB.getChildren().addAll(oneLabel, oneTF, display, filePath, writeToFile);
-			oneLabel.setText("Year:");
-			oneTF.setPromptText("Enter A Year");
+			entriesVB.getChildren().addAll(display, filePath, writeToFile);
 			header.setText("Annual Report");
 			column1.setText("Farm ID");
 			minMaxAverage.setVisible(false);
@@ -234,7 +283,7 @@ public class Main extends Application {
 			primaryStage.setTitle(APP_TITLE);
 			primaryStage.setScene(reportScene);
 			primaryStage.show();
-		} else if (report == 'D') {
+		} else if (report == 'D') { //date report
 			entriesVB.getChildren().clear();
 			entriesVB.getChildren().addAll(oneLabel, beginningDate, twoLabel, endDate, display, filePath, writeToFile);
 			oneLabel.setText("Beginning Date:");
