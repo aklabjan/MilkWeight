@@ -1,5 +1,7 @@
 package application;
 
+import java.io.FileNotFoundException;
+import java.time.LocalDate;
 import java.util.Calendar;
 
 /*
@@ -7,8 +9,8 @@ import java.util.Calendar;
  */
 public class DataManager {
 
-	private CheeseFactory cheeseFactory;
-	private int total;
+	public CheeseFactory cheeseFactory;
+	public int total;
 	private int min;
 	private int max;
 
@@ -18,6 +20,10 @@ public class DataManager {
 	public class DataEntry {
 		public String column1Data;
 		public double column2Data;
+
+		public String toString() {
+			return "Column 1: " + column1Data + " Column 2: " + column2Data;
+		}
 
 	}
 
@@ -62,12 +68,13 @@ public class DataManager {
 	 * 
 	 * @param farmID the farm looking for report
 	 * @return array of the data entries analysing the data
+	 * @throws Exception
 	 */
-	public DataEntry[] getDataForFarmReport(String farmID) {
+	public DataEntry[] getDataForFarmReport(String farmID) throws Exception {
 		int[] monthlyTotal = new int[12];
 		total = 0;
 		DataEntry[] data = new DataEntry[12];
-		for(int i = 0; i < data.length; i++) {
+		for (int i = 0; i < data.length; i++) {
 			data[i] = new DataEntry();
 		}
 		Farm farm = null;
@@ -78,6 +85,10 @@ public class DataManager {
 				break;
 			}
 		}
+		// if far is not in the cheesefactory
+		if (farm == null)
+			throw new Exception("farm does not exist in cheesefactory");
+
 		// loops through and addes each milkEntry to correct monthly total
 		for (int i = 0; i < farm.numEntries; i++) {
 			monthlyTotal[farm.milkData[i].date.get(Calendar.MONTH)] += farm.milkData[i].weight;
@@ -88,7 +99,7 @@ public class DataManager {
 		max = 0;
 		for (int i = 0; i < monthlyTotal.length; i++) {
 			data[i].column1Data = Integer.toString(i + 1);
-			data[i].column2Data = (double)monthlyTotal[i] / (double)total;
+			data[i].column2Data = ((double) monthlyTotal[i] / (double) total) * 100;
 			if (max < monthlyTotal[i]) {
 				max = monthlyTotal[i];
 			}
@@ -106,10 +117,20 @@ public class DataManager {
 	 */
 	public DataEntry[] getDataforAnnualReport() {
 		DataEntry[] data = new DataEntry[cheeseFactory.numFarms];
+		for (int i = 0; i < data.length; i++) {
+			data[i] = new DataEntry();
+		}
 		for (int i = 0; i < cheeseFactory.numFarms; i++) {
 			data[i].column1Data = cheeseFactory.milkDataFromFarms[i].farmID;
-			data[i].column2Data = cheeseFactory.milkDataFromFarms[i].totalWeight / cheeseFactory.totalWeight;
+			data[i].column2Data = ((double) cheeseFactory.milkDataFromFarms[i].totalWeight
+					/ (double) cheeseFactory.totalWeight) * 100;
 		}
+		return data;
+	}
+
+	public DataEntry[] getDataForDateRange(LocalDate begin, LocalDate end) {
+		//Calendar beginningDate = new Calendar().getInstance();
+		DataEntry[] data = new DataEntry[cheeseFactory.numFarms];
 		return data;
 	}
 
@@ -118,16 +139,23 @@ public class DataManager {
 	 * 
 	 * @param month the month being analysed
 	 * @return the data
+	 * @throws Exception
 	 */
-	public DataEntry[] getDataforMonthlyReport(int month) {
+	public DataEntry[] getDataforMonthlyReport(String month) throws Exception {
+		int m = Integer.parseInt(month) - 1;
+		if (m < 0 || m > 11)
+			throw new Exception("Month is not in range.");
 		total = 0;
 		DataEntry[] data = new DataEntry[cheeseFactory.numFarms];
+		for (int i = 0; i < data.length; i++) {
+			data[i] = new DataEntry();
+		}
 		int[] monthlyTotalByFarm = new int[cheeseFactory.numFarms];
 		// loops through farms and calculates total weight for month for each farm
 		for (int i = 0; i < cheeseFactory.numFarms; i++) {
 			int monthlyTotal = 0;
 			for (int j = 0; j < cheeseFactory.milkDataFromFarms[i].numEntries; j++) {
-				if (cheeseFactory.milkDataFromFarms[i].milkData[j].date.get(Calendar.MONTH) == month - 1) {
+				if (cheeseFactory.milkDataFromFarms[i].milkData[j].date.get(Calendar.MONTH) == m) {
 					monthlyTotal += cheeseFactory.milkDataFromFarms[i].milkData[j].weight;
 					total += cheeseFactory.milkDataFromFarms[i].milkData[j].weight;
 				}
@@ -139,7 +167,7 @@ public class DataManager {
 		// created data array and finds min and max
 		for (int i = 0; i < monthlyTotalByFarm.length; i++) {
 			data[i].column1Data = cheeseFactory.milkDataFromFarms[i].farmID;
-			data[i].column2Data = monthlyTotalByFarm[i] / total;
+			data[i].column2Data = ((double) monthlyTotalByFarm[i] / (double) total) * 100;
 			if (max < monthlyTotalByFarm[i]) {
 				max = monthlyTotalByFarm[i];
 			}
@@ -177,4 +205,16 @@ public class DataManager {
 		return min;
 	}
 
+	public static void main(String[] args) throws Exception {
+		CheeseFactory cheese = new CheeseFactory("");
+		try {
+			cheese.insertData("/Users/ana/Desktop/CompSci400/csv/small", "2019");
+		} catch (FileNotFoundException e) {
+		}
+		DataManager dm = new DataManager(cheese);
+		DataEntry[] data = dm.getDataforMonthlyReport("1");
+		for (int i = 0; i < data.length; i++) {
+			System.out.println(data[i].toString());
+		}
+	}
 }

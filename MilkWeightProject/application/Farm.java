@@ -10,6 +10,7 @@ public class Farm {
 	public MilkEntry[] milkData;
 	public int numEntries;
 	public int totalWeight;
+
 	/**
 	 * creates a farm
 	 * 
@@ -18,7 +19,7 @@ public class Farm {
 	public Farm(String farmID) {
 		numEntries = 0;
 		this.farmID = farmID;
-		milkData = new MilkEntry[10];
+		milkData = new MilkEntry[50];
 	}
 
 	/**
@@ -43,11 +44,11 @@ public class Farm {
 	 * @param weight the wieght
 	 * @return true when inserted
 	 */
-	public boolean insertMilkForDate(int year, int month, int day, int weight) {
+	public boolean insertMilkForDate(MilkEntry entry) {
 		resize();
-		milkData[numEntries] = new MilkEntry(year, month, day, weight);
+		milkData[numEntries] = entry;
 		numEntries++;
-		totalWeight += weight;
+		totalWeight += entry.weight;
 		return true;
 	}
 
@@ -106,9 +107,18 @@ public class Farm {
 		milkData = new MilkEntry[10];
 		return temp;
 	}
-	
+
 	public String toString() {
 		return "Farm ID: " + farmID + " Number of entries: " + numEntries;
 	}
 
+	public static void main(String[] args) {
+		Farm farm = new Farm("Farm 0");
+		farm.insertMilkForDate(new MilkEntry(2019, 1, 20, 10));
+		farm.insertMilkForDate(new MilkEntry(2019, 2, 3, 5));
+		farm.insertMilkForDate(new MilkEntry(2019, 3, 1, 3));
+		for (int i = 0; i < farm.numEntries; i++) {
+			System.out.println(farm.milkData[i].weight + " , " + farm.milkData[i].date.get(Calendar.MONTH));
+		}
+	}
 }

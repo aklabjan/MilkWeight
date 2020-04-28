@@ -1,12 +1,8 @@
 package application;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 
-import application.Main.DataEntry;
 import javafx.application.Application;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -21,7 +17,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -51,6 +46,9 @@ public class Main extends Application {
 	private Label milkTotalLabel;
 	private CheeseFactory cheeseFactory;
 	private DataManager dm;
+	private char reportType;
+	private TableView<DataEntry> tableView;
+	private TableColumn<DataEntry, String> column2;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -67,23 +65,27 @@ public class Main extends Application {
 		TextField importFilePathTF = new TextField();
 		importFilePathTF.setPromptText("Entire filepath");
 		importFilePathTF.setAlignment(Pos.CENTER);
+		Label yearLabel = new Label("Year folder contains data for:");
+		TextField yearTF = new TextField();
+		importFilePathTF.setPromptText("Entire year");
+		importFilePathTF.setAlignment(Pos.CENTER);
 		Button importFileButton = new Button("Import Data");
 		importFileButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
 				try {
 					cheeseFactory = new CheeseFactory("Name");
-					cheeseFactory.insertData(importFilePathTF.getText());
+					cheeseFactory.insertData(importFilePathTF.getText(), yearTF.getText());
 					dm = new DataManager(cheeseFactory);
 					welcomeHeader.setText("Welcome to The Farm Report");
 				} catch (FileNotFoundException e) {
 					cheeseFactory = null;
-					welcomeHeader.setText("Invalid file name. Please try again.");
+					welcomeHeader.setText("Invalid file name or year. Please try again.");
 				}
 			}
 		});
 		importFileButton.setAlignment(Pos.CENTER);
-		importFileVBox.getChildren().addAll(importFileLabel, importFilePathTF, importFileButton);
+		importFileVBox.getChildren().addAll(importFileLabel, importFilePathTF, yearLabel, yearTF, importFileButton);
 
 		// Set up options of reports
 		VBox optionsVBox = new VBox();
@@ -152,12 +154,11 @@ public class Main extends Application {
 		endDate = new DatePicker();
 		entriesVB.setAlignment(Pos.CENTER);
 		// creates farm report data table
-		TableView<DataEntry> tableView = new TableView<DataEntry>();
+		tableView = new TableView<DataEntry>();
 		column1 = new TableColumn<>();
-		TableColumn<DataEntry, String> column2 = new TableColumn<>("Percent of Total");
+		column2 = new TableColumn<>("Percent of Total");
 		tableView.getColumns().add(column1);
 		tableView.getColumns().add(column2);
-		tableView.setPlaceholder(new Label("No data to display."));
 
 		tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		VBox vbox = new VBox(tableView);
@@ -197,7 +198,8 @@ public class Main extends Application {
 					welcomeHeader.setText("Please upload data before selecting a report.");
 				} else {
 					welcomeHeader.setText("Welcome to The Farm Report");
-					setReportScene(primaryStage, 'F');
+					reportType = 'F';
+					setReportScene(primaryStage);
 				}
 
 			}
@@ -209,7 +211,8 @@ public class Main extends Application {
 					welcomeHeader.setText("Please upload data before selecting a report.");
 				} else {
 					welcomeHeader.setText("Welcome to The Farm Report");
-					setReportScene(primaryStage, 'A');
+					reportType = 'A';
+					setReportScene(primaryStage);
 				}
 			}
 		});
@@ -220,7 +223,8 @@ public class Main extends Application {
 					welcomeHeader.setText("Please upload data before selecting a report.");
 				} else {
 					welcomeHeader.setText("Welcome to The Farm Report");
-					setReportScene(primaryStage, 'M');
+					reportType = 'M';
+					setReportScene(primaryStage);
 				}
 			}
 		});
@@ -231,7 +235,8 @@ public class Main extends Application {
 					welcomeHeader.setText("Please upload data before selecting a report.");
 				} else {
 					welcomeHeader.setText("Welcome to The Farm Report");
-					setReportScene(primaryStage, 'D');
+					reportType = 'D';
+					setReportScene(primaryStage);
 				}
 			}
 		});
@@ -239,20 +244,51 @@ public class Main extends Application {
 		display.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				ObservableList<DataEntry> data = FXCollections.observableArrayList();
-				for (application.DataManager.DataEntry d : dm.getDataForFarmReport(oneTF.getText())) {
-					DataEntry temp = new DataEntry(d.column1Data, d.column2Data);
-					data.add(temp);
+				if (reportType == 'F') { // inserts data for farm report
+					ObservableList<DataEntry> data = FXCollections.observableArrayList();
+					try {
+						for (application.DataManager.DataEntry d : dm.getDataForFarmReport(oneTF.getText())) {
+							DataEntry temp = new DataEntry(d.column1Data, d.column2Data);
+							data.add(temp);
+							header.setText("Farm Report");
+						}
+						column1.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column1Data"));
+						column2.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column2Data"));
+						tableView.setItems(data);
+						milkTotalLabel.setText("Total Milk Weight: " + dm.total);
+						minMaxAverage.setText("Average Weight: " + dm.getMonthlyAverageForFarm()
+								+ "    Maximum Weight: " + dm.getMonthlyMaxForFarm() + "    Minimum Weight: "
+								+ dm.getMonthlyMinForFarm());
+						milkTotalLabel.setVisible(true);
+						minMaxAverage.setVisible(true);
+					} catch (Exception e) {
+						milkTotalLabel.setVisible(false);
+						minMaxAverage.setVisible(false);
+						header.setText("Error: Please enter a valid farmID in Cheese Factory.");
+					}
+				} else if (reportType == 'M') { // inserts data for farm report
+					ObservableList<DataEntry> data = FXCollections.observableArrayList();
+					try {
+						for (application.DataManager.DataEntry d : dm.getDataforMonthlyReport(oneTF.getText())) {
+							DataEntry temp = new DataEntry(d.column1Data, d.column2Data);
+							data.add(temp);
+							header.setText("Farm Report");
+						}
+						column1.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column1Data"));
+						column2.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column2Data"));
+						tableView.setItems(data);
+						milkTotalLabel.setText("Total Milk Weight: " + dm.total);
+						minMaxAverage.setText("Average Weight: " + dm.getMonthlyAverage() + "    Maximum Weight: "
+								+ dm.getMonthlyMax() + "    Minimum Weight: " + dm.getMonthlyMin());
+						milkTotalLabel.setVisible(true);
+						minMaxAverage.setVisible(true);
+					} catch (Exception e) {
+						milkTotalLabel.setVisible(false);
+						minMaxAverage.setVisible(false);
+						header.setText("Error: Please enter a value month(1-12).");
+					}
+					
 				}
-				
-
-				column1.setCellValueFactory(
-						new PropertyValueFactory<DataEntry, String>("column1Data"));
-
-				column2.setCellValueFactory(
-						new PropertyValueFactory<DataEntry, String>("column2Data"));
-
-				tableView.setItems(data);
 			}
 		});
 	}
@@ -267,54 +303,49 @@ public class Main extends Application {
 	/*
 	 * sets up the report scene based on what report is wanted
 	 */
-	private void setReportScene(Stage primaryStage, char report) {
-		if (report == 'F') { // farm report
-			entriesVB.getChildren().clear();
+	private void setReportScene(Stage primaryStage) {
+		oneTF.clear();
+		twoTF.clear();
+		tableView.getItems().clear();
+		tableView.setPlaceholder(new Label("No data to display."));
+		minMaxAverage.setVisible(false);
+		milkTotalLabel.setVisible(false);
+		entriesVB.getChildren().clear();
+		if (reportType == 'F') { // farm report
 			entriesVB.getChildren().addAll(oneLabel, oneTF, display, filePath, writeToFile);
 			column1.setText("Month");
 			oneLabel.setText("Farm ID:");
 			oneTF.setPromptText("Enter Farm ID");
-			minMaxAverage.setVisible(false);
-			milkTotalLabel.setVisible(false);
-			primaryStage.setTitle(APP_TITLE);
-			primaryStage.setScene(reportScene);
-			primaryStage.show();
-		} else if (report == 'M') { // monthly report
-			entriesVB.getChildren().clear();
+		} else if (reportType == 'M') { // monthly report
 			entriesVB.getChildren().addAll(oneLabel, oneTF, display, filePath, writeToFile);
 			oneLabel.setText("Month: ");
 			oneTF.setPromptText("Ex: For January enter 1");
 			header.setText("Monthly Report");
 			column1.setText("Farm ID");
-			minMaxAverage.setVisible(false);
-			milkTotalLabel.setVisible(false);
-			primaryStage.setTitle(APP_TITLE);
-			primaryStage.setScene(reportScene);
-			primaryStage.show();
-		} else if (report == 'A') { // annual report
-			entriesVB.getChildren().clear();
-			entriesVB.getChildren().addAll(display, filePath, writeToFile);
+		} else if (reportType == 'A') { // annual report
+			entriesVB.getChildren().addAll(filePath, writeToFile);
 			header.setText("Annual Report");
 			column1.setText("Farm ID");
-			minMaxAverage.setVisible(false);
-			milkTotalLabel.setVisible(false);
-			primaryStage.setTitle(APP_TITLE);
-			primaryStage.setScene(reportScene);
-			primaryStage.show();
-		} else if (report == 'D') { // date report
-			entriesVB.getChildren().clear();
+			ObservableList<DataEntry> data = FXCollections.observableArrayList();
+			for (application.DataManager.DataEntry d : dm.getDataforAnnualReport()) {
+				DataEntry temp = new DataEntry(d.column1Data, d.column2Data);
+				data.add(temp);
+			}
+			column1.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column1Data"));
+			column2.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column2Data"));
+			tableView.setItems(data);
+			milkTotalLabel.setText("Total Milk Weight: " + dm.cheeseFactory.totalWeight);
+			milkTotalLabel.setVisible(true);
+		} else if (reportType == 'D') { // date report
 			entriesVB.getChildren().addAll(oneLabel, beginningDate, twoLabel, endDate, display, filePath, writeToFile);
 			oneLabel.setText("Beginning Date:");
 			twoLabel.setText("End Date:");
 			header.setText("Date Range Report");
 			column1.setText("Farm ID");
-			minMaxAverage.setVisible(false);
-			milkTotalLabel.setVisible(false);
-			primaryStage.setTitle(APP_TITLE);
-			primaryStage.setScene(reportScene);
-			primaryStage.show();
 		}
-
+		primaryStage.setTitle(APP_TITLE);
+		primaryStage.setScene(reportScene);
+		primaryStage.show();
 	}
 
 	public static class DataEntry {
@@ -329,7 +360,7 @@ public class Main extends Application {
 		public String getColumn1Data() {
 			return column1Data;
 		}
-		
+
 		public double getColumn2Data() {
 			return column2Data;
 		}

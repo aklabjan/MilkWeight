@@ -15,7 +15,7 @@ public class FileReader {
 
 	private ArrayList<String> farmData;
 	private ArrayList<MilkEntry> milkData;
-	private final long year = 2019;
+	private String year;
 
 	/**
 	 * testing purposes
@@ -24,7 +24,7 @@ public class FileReader {
 	 * @throws FileNotFoundException
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
-		FileReader fr = new FileReader("/Users/Rachael/Desktop/Eclipse/MilkWeightProject/csv/small");
+		FileReader fr = new FileReader("/Users/ana/Desktop/CompSci400/csv/small");
 		fr.displayData();
 
 	}
@@ -36,7 +36,7 @@ public class FileReader {
 	 * @param filePath
 	 * @throws FileNotFoundException
 	 */
-	public FileReader(String filePath) throws FileNotFoundException {
+	public FileReader(String filePath,String year) throws FileNotFoundException {
 		farmData = new ArrayList<String>();
 		milkData = new ArrayList<MilkEntry>();
 		for (int i = 1; i <= 12; i++) {
@@ -54,13 +54,13 @@ public class FileReader {
 				farmData.add("" + id.charAt(id.length() - 1));
 				
 				temp = date;
-				String year = temp.substring(0, temp.indexOf("-"));
+				String y = temp.substring(0, temp.indexOf("-"));
 				String month = temp.substring(temp.indexOf("-") + 1);
 				month = month.substring(0, month.indexOf("-"));
 				temp = month;
 				String day = temp.substring(temp.indexOf("-") + 1);
 
-				milkData.add(new MilkEntry(Integer.parseInt(year), Integer.parseInt(month),
+				milkData.add(new MilkEntry(Integer.parseInt(y), Integer.parseInt(month),
 						Integer.parseInt(day), Integer.parseInt(weight)));
 
 				// data.add();

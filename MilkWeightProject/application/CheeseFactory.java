@@ -2,6 +2,7 @@ package application;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class CheeseFactory {
 	public String name;
@@ -48,39 +49,38 @@ public class CheeseFactory {
 	 * @param weight the weight
 	 * @return true when inserted
 	 */
-	public boolean insertSingleData(int year, int month, int day, String farmID, int weight) {
+	public boolean insertSingleData(MilkEntry entry, String farmID) {
 		for (int i = 0; i < numFarms; i++) {
-		System.out.println(milkDataFromFarms[i]);
 			if (farmID.equals(milkDataFromFarms[i].farmID)) {
-				milkDataFromFarms[i].insertMilkForDate(year, month, day, weight);
-				totalWeight += weight;
+				milkDataFromFarms[i].insertMilkForDate(entry);
+				totalWeight += entry.weight;
 				return true;
 			}
 		}
 		Farm newFarm = new Farm(farmID);
-		newFarm.insertMilkForDate(year, month, day, weight);
+		newFarm.insertMilkForDate(entry);
 		resize();
 		milkDataFromFarms[numFarms] = newFarm;
 		numFarms++;
-		totalWeight += weight;
+		totalWeight += entry.weight;
 		return true;
 	}
 
 	/**
 	 * inserts data into program from a file
+	 * 
 	 * @param filePath
 	 * @return true if works and false otherwise
-	 * @throws FileNotFoundException 
+	 * @throws FileNotFoundException
 	 */
-	public boolean insertData(String filePath) throws FileNotFoundException{
+	public boolean insertData(String filePath,String year) throws FileNotFoundException {
 		FileReader fr;
-		fr = new FileReader(filePath);
+		fr = new FileReader(filePath,year);
 		ArrayList<String> farmData = fr.getFarmData();
 		ArrayList<MilkEntry> milkData = fr.getMilkData();
-		for(int i = 0; i < farmData.size(); i++) {
-			this.insertSingleData(milkData.get(i).date.YEAR, milkData.get(i).date.MONTH, milkData.get(i).date.DAY_OF_MONTH, farmData.get(i), milkData.get(i).weight);
+		for (int i = 0; i < farmData.size(); i++) {
+			this.insertSingleData(milkData.get(i), farmData.get(i));
 		}
-		
 		return true;
 	}
 
@@ -117,6 +117,20 @@ public class CheeseFactory {
 				milkDataFromFarms[i].removeMilkForDate(year, month, day);
 		}
 		return milkDataFromFarms;
+	}
+
+	public static void main(String[] args) {
+		CheeseFactory cheese = new CheeseFactory("");
+		cheese.insertSingleData(new MilkEntry(2019, 1, 2, 10),"Farm 0");
+		cheese.insertSingleData(new MilkEntry(2019, 2, 4, 5),"Farm 1");
+		cheese.insertSingleData(new MilkEntry(2019, 4, 30,3), "Farm 0");
+		for (int i = 0; i < cheese.numFarms; i++) {
+			System.out.println(cheese.milkDataFromFarms[i].farmID);
+			for (int j = 0; j < cheese.milkDataFromFarms[i].numEntries; j++) {
+				System.out.println(cheese.milkDataFromFarms[i].milkData[j].weight + " , "
+						+ cheese.milkDataFromFarms[i].milkData[j].date.get(Calendar.MONTH));
+			}
+		}
 	}
 
 }

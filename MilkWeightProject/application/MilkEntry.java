@@ -15,6 +15,6 @@ public class MilkEntry {
 	}
 
 	public String toString() {
-		return "Weight: " + weight + " Date: " + date;
+		return "Weight: " + weight + " Date: " + date.getTime().toString();
 	}
 }
