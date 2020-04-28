@@ -15,19 +15,6 @@ public class FileReader {
 
 	private ArrayList<String> farmData;
 	private ArrayList<MilkEntry> milkData;
-	private String year;
-
-	/**
-	 * testing purposes
-	 * 
-	 * @param args
-	 * @throws FileNotFoundException
-	 */
-	public static void main(String[] args) throws FileNotFoundException {
-		FileReader fr = new FileReader("/Users/ana/Desktop/CompSci400/csv/small");
-		fr.displayData();
-
-	}
 
 	/**
 	 * will instantiate the FileReader, moving the information in the given file
@@ -36,36 +23,53 @@ public class FileReader {
 	 * @param filePath
 	 * @throws FileNotFoundException
 	 */
-	public FileReader(String filePath,String year) throws FileNotFoundException {
+	public FileReader(String filePath, String theYear) throws FileNotFoundException {
 		farmData = new ArrayList<String>();
 		milkData = new ArrayList<MilkEntry>();
+		int n = 0;
+		File test = new File(filePath);
+		if (!test.exists()) {
+			throw new FileNotFoundException();
+		}
 		for (int i = 1; i <= 12; i++) {
-			File file = new File(filePath + "/" + year + "-" + i + ".csv");
-			Scanner input = new Scanner(file);
-			input.nextLine();
-			while (input.hasNextLine()) {
-				String temp = input.nextLine();
-				String date = temp.substring(0, temp.indexOf(","));
-				String id = temp.substring(temp.indexOf(",") + 1);
-				temp = id;
-				id = id.substring(0, id.indexOf(","));
-				String weight = temp.substring(temp.indexOf(",") + 1);
-				
-				farmData.add("" + id.charAt(id.length() - 1));
-				
-				temp = date;
-				String y = temp.substring(0, temp.indexOf("-"));
-				String month = temp.substring(temp.indexOf("-") + 1);
-				month = month.substring(0, month.indexOf("-"));
-				temp = month;
-				String day = temp.substring(temp.indexOf("-") + 1);
-
-				milkData.add(new MilkEntry(Integer.parseInt(y), Integer.parseInt(month),
-						Integer.parseInt(day), Integer.parseInt(weight)));
-
-				// data.add();
+			boolean valid = true;
+			File file = new File(filePath + "/" + theYear + "-" + i + ".csv");
+			Scanner input = null;
+			try {
+				input = new Scanner(file);
+			} catch (FileNotFoundException e) {
+				valid = false;
 			}
-			input.close();
+			if (valid) {
+				input.nextLine();
+				while (input.hasNextLine()) {
+					try {
+						String temp = input.nextLine();
+						String date = temp.substring(0, temp.indexOf(","));
+						String id = temp.substring(temp.indexOf(",") + 1);
+						temp = id;
+						id = id.substring(0, id.indexOf(","));
+						String stringWeight = temp.substring(temp.indexOf(",") + 1);
+
+						temp = date;
+						String stringYear = temp.substring(0, temp.indexOf("-"));
+						String stringMonth = temp.substring(temp.indexOf("-") + 1);
+						stringMonth = stringMonth.substring(0, stringMonth.indexOf("-"));
+						temp = stringMonth;
+						String stringDay = temp.substring(temp.indexOf("-") + 1);
+						int year = Integer.parseInt(stringYear);
+						int month = Integer.parseInt(stringMonth);
+						int day = Integer.parseInt(stringDay);
+						int weight = Integer.parseInt(stringWeight);
+
+						farmData.add(id);
+						milkData.add(new MilkEntry(year, month, day, weight));
+					} catch (NumberFormatException e) {
+					} catch (StringIndexOutOfBoundsException e) {
+					}
+				}
+				input.close();
+			}
 		}
 
 	}
@@ -74,7 +78,7 @@ public class FileReader {
 	 * displays the constructed data
 	 */
 	public void displayData() {
-		for(int i = 0; i < farmData.size(); i++) {
+		for (int i = 0; i < farmData.size(); i++) {
 			System.out.println("Farm " + farmData.get(i) + ": " + milkData.get(i));
 		}
 	}
@@ -87,7 +91,7 @@ public class FileReader {
 	public ArrayList<String> getFarmData() {
 		return farmData;
 	}
-	
+
 	/**
 	 * gets the array representation of the milk data
 	 * 

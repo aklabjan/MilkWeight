@@ -1,6 +1,10 @@
 package application;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -49,6 +53,7 @@ public class Main extends Application {
 	private char reportType;
 	private TableView<DataEntry> tableView;
 	private TableColumn<DataEntry, String> column2;
+	private ArrayList<DataEntry> currentData = new ArrayList<DataEntry>();
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -78,7 +83,7 @@ public class Main extends Application {
 					cheeseFactory.insertData(importFilePathTF.getText(), yearTF.getText());
 					dm = new DataManager(cheeseFactory);
 					welcomeHeader.setText("Welcome to The Farm Report");
-				} catch (FileNotFoundException e) {
+				} catch (FileNotFoundException e1) {
 					cheeseFactory = null;
 					welcomeHeader.setText("Invalid file name or year. Please try again.");
 				}
@@ -244,12 +249,14 @@ public class Main extends Application {
 		display.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
+				currentData.clear();
 				if (reportType == 'F') { // inserts data for farm report
 					ObservableList<DataEntry> data = FXCollections.observableArrayList();
 					try {
 						for (application.DataManager.DataEntry d : dm.getDataForFarmReport(oneTF.getText())) {
 							DataEntry temp = new DataEntry(d.column1Data, d.column2Data);
 							data.add(temp);
+							currentData.add(temp);
 							header.setText("Farm Report");
 						}
 						column1.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column1Data"));
@@ -272,6 +279,7 @@ public class Main extends Application {
 						for (application.DataManager.DataEntry d : dm.getDataforMonthlyReport(oneTF.getText())) {
 							DataEntry temp = new DataEntry(d.column1Data, d.column2Data);
 							data.add(temp);
+							currentData.add(temp);
 							header.setText("Farm Report");
 						}
 						column1.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column1Data"));
@@ -287,9 +295,30 @@ public class Main extends Application {
 						minMaxAverage.setVisible(false);
 						header.setText("Error: Please enter a value month(1-12).");
 					}
-					
+
 				}
 			}
+		});
+		writeToFile.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent arg0) {
+				File file = new File(filePath.getText());
+				try {
+					if (!file.exists()) {
+						file.createNewFile();
+					}
+
+					PrintWriter pw = new PrintWriter(file);
+					for (int i = 0; i < currentData.size(); i++) {
+						pw.println(currentData.get(i));
+					}
+					pw.close();
+				} catch (IOException e) {
+
+				}
+
+			}
+
 		});
 	}
 
@@ -326,10 +355,12 @@ public class Main extends Application {
 			entriesVB.getChildren().addAll(filePath, writeToFile);
 			header.setText("Annual Report");
 			column1.setText("Farm ID");
+			currentData.clear();
 			ObservableList<DataEntry> data = FXCollections.observableArrayList();
 			for (application.DataManager.DataEntry d : dm.getDataforAnnualReport()) {
 				DataEntry temp = new DataEntry(d.column1Data, d.column2Data);
 				data.add(temp);
+				currentData.add(temp);
 			}
 			column1.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column1Data"));
 			column2.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column2Data"));
@@ -363,6 +394,10 @@ public class Main extends Application {
 
 		public double getColumn2Data() {
 			return column2Data;
+		}
+
+		public String toString() {
+			return column1Data + "  " + column2Data;
 		}
 	}
 }

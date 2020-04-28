@@ -74,8 +74,7 @@ public class CheeseFactory {
 	 * @throws FileNotFoundException
 	 */
 	public boolean insertData(String filePath,String year) throws FileNotFoundException {
-		FileReader fr;
-		fr = new FileReader(filePath,year);
+		FileReader fr = new FileReader(filePath,year);
 		ArrayList<String> farmData = fr.getFarmData();
 		ArrayList<MilkEntry> milkData = fr.getMilkData();
 		for (int i = 0; i < farmData.size(); i++) {

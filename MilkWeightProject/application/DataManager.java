@@ -129,7 +129,10 @@ public class DataManager {
 	}
 
 	public DataEntry[] getDataForDateRange(LocalDate begin, LocalDate end) {
-		//Calendar beginningDate = new Calendar().getInstance();
+		Calendar beginningDate = Calendar.getInstance();
+		beginningDate.set(Calendar.MONTH, beginningDate.MONTH);
+		beginningDate.set(Calendar.DAY_OF_MONTH, beginningDate.DAY_OF_MONTH);
+		beginningDate.set(Calendar.YEAR, beginningDate.YEAR);
 		DataEntry[] data = new DataEntry[cheeseFactory.numFarms];
 		return data;
 	}
