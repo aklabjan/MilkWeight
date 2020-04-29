@@ -128,12 +128,44 @@ public class DataManager {
 		return data;
 	}
 
-	public DataEntry[] getDataForDateRange(LocalDate begin, LocalDate end) {
+	public DataEntry[] getDataForDateRange(LocalDate begin, LocalDate end) throws Exception {
+		// creation of calendar instance of begnning and end date
 		Calendar beginningDate = Calendar.getInstance();
-		beginningDate.set(Calendar.MONTH, beginningDate.MONTH);
-		beginningDate.set(Calendar.DAY_OF_MONTH, beginningDate.DAY_OF_MONTH);
-		beginningDate.set(Calendar.YEAR, beginningDate.YEAR);
+		beginningDate.set(Calendar.MONTH, begin.getMonthValue()-1);
+		beginningDate.set(Calendar.DAY_OF_MONTH, begin.getDayOfMonth());
+		beginningDate.set(Calendar.YEAR, begin.getYear());
+		Calendar endDate = Calendar.getInstance();
+		endDate.set(Calendar.MONTH, end.getMonthValue()-1);
+		endDate.set(Calendar.DAY_OF_MONTH, end.getDayOfMonth());
+		endDate.set(Calendar.YEAR, end.getYear());
+		if (beginningDate.after(endDate))
+			throw new Exception("Beginning Date is after end date.");
+		// set up to start collecting weights
+		total = 0;
 		DataEntry[] data = new DataEntry[cheeseFactory.numFarms];
+		for (int i = 0; i < data.length; i++) {
+			data[i] = new DataEntry();
+		}
+		int[] dateRangeTotalByFarm = new int[cheeseFactory.numFarms];
+		// loops through farms and calculates total weight for date range for each farm
+		for (int i = 0; i < cheeseFactory.numFarms; i++) {
+			int monthlyTotal = 0;
+			for (int j = 0; j < cheeseFactory.milkDataFromFarms[i].numEntries; j++) {
+				if (cheeseFactory.milkDataFromFarms[i].milkData[j].date.after(beginningDate)
+						&& cheeseFactory.milkDataFromFarms[i].milkData[j].date.before(endDate)) {
+					monthlyTotal += cheeseFactory.milkDataFromFarms[i].milkData[j].weight;
+					total += cheeseFactory.milkDataFromFarms[i].milkData[j].weight;
+				}
+			}
+			dateRangeTotalByFarm[i] = monthlyTotal;
+		}
+		min = dateRangeTotalByFarm[0];
+		max = 0;
+		// created data array and finds min and max
+		for (int i = 0; i < dateRangeTotalByFarm.length; i++) {
+			data[i].column1Data = cheeseFactory.milkDataFromFarms[i].farmID;
+			data[i].column2Data = ((double) dateRangeTotalByFarm[i] / (double) total) * 100;
+		}
 		return data;
 	}
 

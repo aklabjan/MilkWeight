@@ -26,7 +26,6 @@ public class FileReader {
 	public FileReader(String filePath, String theYear) throws FileNotFoundException {
 		farmData = new ArrayList<String>();
 		milkData = new ArrayList<MilkEntry>();
-		int n = 0;
 		File test = new File(filePath);
 		if (!test.exists()) {
 			throw new FileNotFoundException();

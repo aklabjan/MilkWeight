@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 import javafx.application.Application;
@@ -24,6 +25,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 public class Main extends Application {
 	// store any command-line arguments that were entered.
@@ -72,8 +74,8 @@ public class Main extends Application {
 		importFilePathTF.setAlignment(Pos.CENTER);
 		Label yearLabel = new Label("Year folder contains data for:");
 		TextField yearTF = new TextField();
-		importFilePathTF.setPromptText("Entire year");
-		importFilePathTF.setAlignment(Pos.CENTER);
+		yearTF.setPromptText("Entire year");
+		yearTF.setAlignment(Pos.CENTER);
 		Button importFileButton = new Button("Import Data");
 		importFileButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -83,6 +85,10 @@ public class Main extends Application {
 					cheeseFactory.insertData(importFilePathTF.getText(), yearTF.getText());
 					dm = new DataManager(cheeseFactory);
 					welcomeHeader.setText("Welcome to The Farm Report");
+					LocalDate begin = LocalDate.of(Integer.parseInt(yearTF.getText()),1,1);
+					LocalDate end = LocalDate.of(Integer.parseInt(yearTF.getText()),12,31);
+					restrictDatePicker(beginningDate,begin,end);
+					restrictDatePicker(endDate,begin,end);
 				} catch (FileNotFoundException e1) {
 					cheeseFactory = null;
 					welcomeHeader.setText("Invalid file name or year. Please try again.");
@@ -280,7 +286,7 @@ public class Main extends Application {
 							DataEntry temp = new DataEntry(d.column1Data, d.column2Data);
 							data.add(temp);
 							currentData.add(temp);
-							header.setText("Farm Report");
+							header.setText("Monthly Report");
 						}
 						column1.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column1Data"));
 						column2.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column2Data"));
@@ -295,30 +301,49 @@ public class Main extends Application {
 						minMaxAverage.setVisible(false);
 						header.setText("Error: Please enter a value month(1-12).");
 					}
-
+				} else if (reportType == 'D') {
+					ObservableList<DataEntry> data = FXCollections.observableArrayList();
+					try {
+						for (application.DataManager.DataEntry d : dm.getDataForDateRange(beginningDate.getValue(),
+								endDate.getValue())) {
+							DataEntry temp = new DataEntry(d.column1Data, d.column2Data);
+							data.add(temp);
+							currentData.add(temp);
+							header.setText("Date Range Report");
+						}
+						column1.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column1Data"));
+						column2.setCellValueFactory(new PropertyValueFactory<DataEntry, String>("column2Data"));
+						tableView.setItems(data);
+						milkTotalLabel.setText("Total Milk Weight: " + dm.total);
+						milkTotalLabel.setVisible(true);
+					} catch (Exception e) {
+						milkTotalLabel.setVisible(false);
+						header.setText("Error: Enter a valid beginning and end date.");
+					}
 				}
 			}
 		});
+		// when write to file is pressed it creates a file
 		writeToFile.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent arg0) {
-				File file = new File(filePath.getText());
-				try {
-					if (!file.exists()) {
-						file.createNewFile();
+				if (currentData.isEmpty())
+					header.setText("Error: Please display data before writing to file.");
+				else {
+					File file = new File(filePath.getText());
+					try {
+						if (!file.exists()) {
+							file.createNewFile();
+						}
+						PrintWriter pw = new PrintWriter(file);
+						for (int i = 0; i < currentData.size(); i++) {
+							pw.println(currentData.get(i));
+						}
+						pw.close();
+					} catch (IOException e) {
 					}
-
-					PrintWriter pw = new PrintWriter(file);
-					for (int i = 0; i < currentData.size(); i++) {
-						pw.println(currentData.get(i));
-					}
-					pw.close();
-				} catch (IOException e) {
-
 				}
-
 			}
-
 		});
 	}
 
@@ -335,11 +360,13 @@ public class Main extends Application {
 	private void setReportScene(Stage primaryStage) {
 		oneTF.clear();
 		twoTF.clear();
+		filePath.clear();
 		tableView.getItems().clear();
 		tableView.setPlaceholder(new Label("No data to display."));
 		minMaxAverage.setVisible(false);
 		milkTotalLabel.setVisible(false);
 		entriesVB.getChildren().clear();
+		currentData.clear();
 		if (reportType == 'F') { // farm report
 			entriesVB.getChildren().addAll(oneLabel, oneTF, display, filePath, writeToFile);
 			column1.setText("Month");
@@ -355,7 +382,6 @@ public class Main extends Application {
 			entriesVB.getChildren().addAll(filePath, writeToFile);
 			header.setText("Annual Report");
 			column1.setText("Farm ID");
-			currentData.clear();
 			ObservableList<DataEntry> data = FXCollections.observableArrayList();
 			for (application.DataManager.DataEntry d : dm.getDataforAnnualReport()) {
 				DataEntry temp = new DataEntry(d.column1Data, d.column2Data);
@@ -377,6 +403,35 @@ public class Main extends Application {
 		primaryStage.setTitle(APP_TITLE);
 		primaryStage.setScene(reportScene);
 		primaryStage.show();
+	}
+
+	/**
+	 * limits date picker to current dates
+	 * 
+	 * @param datePicker the date picker
+	 * @param minDate    the beginning date
+	 * @param maxDate    the end date
+	 */
+	private void restrictDatePicker(DatePicker datePicker, LocalDate minDate, LocalDate maxDate) {
+		final Callback<DatePicker, DateCell> dayCellFactory = new Callback<DatePicker, DateCell>() {
+			@Override
+			public DateCell call(final DatePicker datePicker) {
+				return new DateCell() {
+					@Override
+					public void updateItem(LocalDate item, boolean empty) {
+						super.updateItem(item, empty);
+						if (item.isBefore(minDate)) {
+							setDisable(true);
+							setStyle("-fx-background-color: #ffc0cb;");
+						} else if (item.isAfter(maxDate)) {
+							setDisable(true);
+							setStyle("-fx-background-color: #ffc0cb;");
+						}
+					}
+				};
+			}
+		};
+		datePicker.setDayCellFactory(dayCellFactory);
 	}
 
 	public static class DataEntry {
